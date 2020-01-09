@@ -1,3 +1,5 @@
+from collections import defaultdict, deque
+
 """Tree traversal examples."""
 
 class TreeNode:
@@ -8,7 +10,7 @@ class TreeNode:
     def __repr__(self):
         if not self.val:
             return f'Node({self.val})'
-        return f'Node({self.left.val if self.left else None}) <- NODE({self.val}) -> Node({self.right.val if self.right else None})'
+        return f'Node({self.val})'
 
 
 def inorder_traverse_re(root):
@@ -76,10 +78,34 @@ def postorder_traverse_iter(root):
     values.reverse()
     return values
 
+def bts_level_order(root):
+    """Print tree values by level, grouped in lists."""
+    if not root:
+        return []
+    q = deque()
+    q.appendleft(root)
+    levels = defaultdict(list)
+    levels[root] = 0
+    result = []
 
+    while q:
+        current = q.pop()
+        if current:
+            if current.left:
+                q.appendleft(current.left)
+                levels[current.left] = levels[current] + 1
+            if current.right:
+                q.appendleft(current.right)
+                levels[current.right] = levels[current] + 1
+    result = [[] for _ in range(len(set(levels.values())))]
+    for node, level in levels.items():
+        result[level].append(node.val)
+
+    return result
 
 
 if __name__ == '__main__':
+    # DFS
     t = TreeNode(1)
     t.right = TreeNode(2)
     t.right.left = TreeNode(3)
@@ -89,3 +115,18 @@ if __name__ == '__main__':
 
     assert postorder_traverse_re(t) == [3, 4, 2, 1]
     assert postorder_traverse_iter(t) == [3, 4, 2, 1]
+
+    # BTS
+    p = TreeNode(1)
+    p.left = TreeNode(2)
+    p.right = TreeNode(3)
+    p.left.left = TreeNode(4)
+    p.left.right = TreeNode(5)
+    assert bts_level_order(p) == [[1],[2,3],[4,5]]
+
+    q = TreeNode(1)
+    q.left = TreeNode(2)
+    q.left.left = TreeNode(3)
+    q.left.left.left = TreeNode(4)
+    q.left.left.left.left = TreeNode(5)
+    assert bts_level_order(q) == [[1], [2], [3], [4], [5]]
